@@ -4,10 +4,13 @@ import uuid
 import random
 import time
 from datetime import datetime
+import os
 
-# Configurar el productor de Kafka
+# Conectar a Kafka
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "kafka:9092")
+
 producer = KafkaProducer(
-    bootstrap_servers="localhost:9092",
+    bootstrap_servers=KAFKA_BROKER,
     value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
 
@@ -24,4 +27,4 @@ while True:
 
     producer.send("synthetic_data", mensaje)
     print(f"✅ Enviado: {mensaje}")
-    time.sleep(2)  # Espera 2 segundos antes de enviar otro mensaje
+    time.sleep(2)

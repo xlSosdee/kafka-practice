@@ -46,9 +46,21 @@ kafka-practice/
 
 ## 📸 Ejemplo de Mensajes Recibidos
 
-A continuación, una muestra visual de los mensajes recibidos por el Consumer:
+A continuación, una muestra visual de los mensajes que envia el producer:
 
-![Mensajes Recibidos](fotos/recibidos.png)
+Muestra en Kafka UI
+
+![Mensajes Enviados](fotos/kafka-ui.png)
+
+
+Los recibe el consumer
+
+![Mensajes Recibidos](fotos/resultado-consumer-consola.png)
+
+Parece que el kafka UI no reconoce el consumer??
+
+![Mensajes Recibidos Kafka UI](fotos/vista-consumer-kafkaui.png)
+
 
 ## 🛠️ Posibles Errores y Soluciones
 
