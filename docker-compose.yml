@@ -14,13 +14,33 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
+      - "9093:9093"  # ✅ SOLO SSL
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+      # ✅ SOLO SSL
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka:9093
+      KAFKA_SECURITY_PROTOCOL: SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: SSL
+
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      # ✅ Configuración de SSL
+      KAFKA_SSL_KEYSTORE_LOCATION: "/etc/kafka/secrets/kafka.server.keystore.jks"
+      KAFKA_SSL_TRUSTSTORE_LOCATION: "/etc/kafka/secrets/kafka.server.truststore.jks"
+      KAFKA_SSL_KEYSTORE_PASSWORD: "password"
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: "password"
+      KAFKA_SSL_CLIENT_AUTH: "required"
+      KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.jks
+      KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.server.truststore.jks
+      KAFKA_SSL_KEY_CREDENTIALS: "kafka-key-credentials"
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: "kafka-keystore-credentials"
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: "kafka-truststore-credentials"
+
+    volumes:
+      - ./certs:/etc/kafka/secrets  # ✅ Montamos la carpeta de certificados en el contenedor
 
   producer:
     build: .
@@ -28,8 +48,14 @@ services:
     depends_on:
       - kafka
     environment:
-      - KAFKA_BROKER=kafka:9092
+      - KAFKA_BROKER=kafka:9093  # ✅ SOLO SSL
+      - KAFKA_SECURITY_PROTOCOL=SSL
+      - KAFKA_SSL_CA_LOCATION=/certs/ca-cert
+      - KAFKA_SSL_CERTIFICATE_LOCATION=/certs/client-cert
+      - KAFKA_SSL_KEY_LOCATION=/certs/client-key
     command: ["producer.py"]
+    volumes:
+      - ./certs:/etc/kafka/secrets  # ✅ Acceder a los certificados
 
   consumer:
     build: .
@@ -37,8 +63,14 @@ services:
     depends_on:
       - kafka
     environment:
-      - KAFKA_BROKER=kafka:9092
+      - KAFKA_BROKER=kafka:9093  # ✅ SOLO SSL
+      - KAFKA_SECURITY_PROTOCOL=SSL
+      - KAFKA_SSL_CA_LOCATION=/certs/ca-cert
+      - KAFKA_SSL_CERTIFICATE_LOCATION=/certs/client-cert
+      - KAFKA_SSL_KEY_LOCATION=/certs/client-key
     command: ["consumer.py"]
+    volumes:
+      - ./certs:/etc/kafka/secrets  # ✅ Acceder a los certificados
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -49,5 +81,5 @@ services:
       - "8080:8080"
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      - KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS=kafka:9093  # ✅ SOLO SSL
+      - KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL=SSL
